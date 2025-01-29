@@ -4,5 +4,5 @@ from django.http import HttpResponse,JsonResponse
 # Create your views here.
 
 def index(request):
-    True
+    pass
     return HttpResponse("Hello,Trial Change!!")
