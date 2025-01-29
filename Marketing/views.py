@@ -4,4 +4,4 @@ from django.http import HttpResponse,JsonResponse
 # Create your views here.
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the Marketing index.")
+    return HttpResponse("Hello,Trial Change!!")
