@@ -4,5 +4,5 @@ from django.http import HttpResponse,JsonResponse
 # Create your views here.
 
 def index(request):
-    print("Demon1")
+    print("Tenz")
     return HttpResponse("Hello,Tenz Change!!")
