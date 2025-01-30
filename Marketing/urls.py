@@ -3,7 +3,8 @@ from . import views
 
 
 urlpatterns = [
-    path('api/',views.TestView.as_view(),name='index'),
+    path('',views.TestView.as_view(),name='index'),
     path('login',views.login_view,name='login'),
+    # path('index/',views.index,name='index'),
 ]
 
