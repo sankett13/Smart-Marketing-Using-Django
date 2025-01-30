@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import *
 from .serializer import *
+import textwrap
 
 import os,sys
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -60,11 +61,16 @@ def login_view(request):
 
                 The response should be concise, factual, and up-to-date, ensuring all insights are specific to Gujarat and the winter season."""
                 news = get_groq_news(prompt)
-                #format this news
-                print(news)
+                sections = news.strip().split("\n\n")
+                news_dict = []
+                for section in sections:
+                    news_dict.append(section)
+                
+                print(news_dict)
 
-                return render(request,"dashboard.html",{"news":news})
+                return render(request,"dashboard.html",{"news":news_dict})
         else:
             return HttpResponse("Invalid credentials")
+            
 
     return render(request,"login.html")
