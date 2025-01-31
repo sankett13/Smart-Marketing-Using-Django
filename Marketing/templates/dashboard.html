@@ -1,12 +1,149 @@
-<!DOCTYPE html>
-<html lang="en">
+{# templates/prompt_form.html #}
+{% load static %}
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title>Prompt Generator</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .container {
+            display: flex;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .input-section, .output-section {
+            flex: 1;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+        
+        button {
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        button:hover {
+            background-color: #0052a3;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .output-box {
+            min-height: 150px;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        
+        h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .loading {
+            display: none;
+            margin-left: 1rem;
+            color: #666;
+        }
+    </style>
 </head>
 <body>
-    <h1>Dashboard</h1>
+    <h1>Prompt Generator</h1>
     
+    <div class="container">
+        <div class="input-section">
+            <h2>Enter your prompt</h2>
+            <textarea id="promptInput" placeholder="Type your prompt here..."></textarea>
+            <button onclick="generateResult()" id="generateBtn">Generate</button>
+            <span id="loading" class="loading">Processing...</span>
+        </div>
+        
+        <div class="output-section">
+            <h2>Result</h2>
+            <div id="resultOutput" class="output-box"></div>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        async function generateResult() {
+            const promptText = document.getElementById('promptInput').value;
+            const outputDiv = document.getElementById('resultOutput');
+            const generateBtn = document.getElementById('generateBtn');
+            const loadingSpan = document.getElementById('loading');
+            
+            if (!promptText.trim()) {
+                alert('Please enter a prompt');
+                return;
+            }
+            
+            generateBtn.disabled = true;
+            loadingSpan.style.display = 'inline';
+            outputDiv.textContent = '';
+            
+            try {
+                const response = await fetch('{% url "generate_result" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        prompt: promptText
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    outputDiv.textContent = data.content;
+                } else {
+                    outputDiv.textContent = 'Error: Response Unsuccessful ' + (data.error || 'Something went wrong');
+                }
+            } catch (error) {
+                outputDiv.textContent = 'Error: Execption' + error.message;
+            } finally {
+                generateBtn.disabled = false;
+                loadingSpan.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>
