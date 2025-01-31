@@ -6,12 +6,24 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import *
 from .serializer import *
-import textwrap
 
+#for WhastApp message
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
+import time
+import pandas as pd
+
+# for groq api
 import os,sys
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 from utils import get_groq_news
+
+
+# for email
+from django.core.mail import send_mail
+from django.conf import settings
 
 # Create your views here.
 
@@ -20,6 +32,28 @@ from utils import get_groq_news
 #         return render(request,"index.html")
 #     if request.method=="POST":
 #         return redirect("TestView")
+
+################################################## functions ################################################################
+def send_email(email,subject,message):
+    email_from=settings.EMAIL_HOST_USER
+    recipient_list=[email]
+    send_mail(subject,message,email_from,recipient_list)
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+####################################################  Views ################################################################
+
 
 class TestView(APIView):
     def get(self,request,*args,**kwargs):
@@ -66,7 +100,7 @@ def login_view(request):
                 for section in sections:
                     news_dict.append(section)
                 
-                print(news_dict)
+                # print(news_dict)
 
                 return render(request,"dashboard.html",{"news":news_dict})
         else:
@@ -74,3 +108,56 @@ def login_view(request):
             
 
     return render(request,"login.html")
+
+
+
+
+
+def send_whatsapp_message(request):
+    if request.method == 'POST':
+        options = webdriver.ChromeOptions()
+        options.add_experimental_option("detach", True)
+        driver = webdriver.Chrome(options=options)
+        users = User_info.objects.all()
+        user_details = []
+        for user in users:
+            user_details.append({
+                'name': user.name,
+                'phone_number': user.phone_number,
+            })
+        
+        driver.get("https://web.whatsapp.com/")
+        input("Press Enter to continue after scanning QR code")
+        # print(user_details)
+        message = "this is a test message from Smart Marketing"
+        for user in user_details:
+            print(user.get('phone_number'))
+            driver.get(f"https://web.whatsapp.com/send?phone={user.get('phone_number')}&text={message}")
+            time.sleep(10)
+            try:
+                send_button = driver.find_element(By.XPATH, "//span[@data-icon='send']")
+                send_button.click()
+                time.sleep(5)
+                print(f"Message sent to {user.get('name')}")
+            except Exception as e:
+                print(e)
+
+        driver.quit()
+        return JsonResponse({"message": "Message sent successfully"}, status=200)
+    return JsonResponse({"message": "Invalid request method"}, status=400)
+
+
+def send_email_message(request):
+    if request.method == 'POST':
+        subject = "Test email"
+        message = "this is a test message from Smart Marketing"
+        users = User_info.objects.all()
+        for user in users:
+            print(user.email)
+            send_email(user.email,subject,message)
+            time.sleep(5)
+
+        return JsonResponse({"message": "Email sent successfully"}, status=200)
+
+
+    return HttpResponse("Email sent successfully")

@@ -1,14 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard</h1>
-    <p>{{ news }}</p>
-    
-    
-</body>
-</html>
+{%extends "base.html"%} 
+{%load static%}
+{% block title %}Dashboard{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<p>{{news}}</p>
+
+<button class="whatsapp_msg">Send Whatsapp Message to all customers</button>
+<button class="email_msg">Send Email to all customers</button>
+
+
+
+
+<script>
+    whatsapp_msg = document.querySelector(".whatsapp_msg");
+    email_msg = document.querySelector(".email_msg");
+
+    whatsapp_msg.addEventListener("click",function(){
+        fetch("{% url 'send_whatsapp_message' %}",{
+            method:"POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response=>{
+            if(response.status == 200){
+                alert("Message sent to all users")
+            }else{
+                alert("Error sending message")
+            }
+        })
+    })
+    email_msg.addEventListener("click",function(){
+        fetch("{% url 'send_email_message' %}",{
+            method:"POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        })
+        .then(res=>{
+            if(res.status == 200){
+                alert("Email sent to all users")
+            }else{
+                alert("Error sending email")
+            }
+        })
+    })
+
+
+</script>
+{% endblock %}

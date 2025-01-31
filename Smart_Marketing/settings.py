@@ -132,3 +132,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY", "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")
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'sanket13052004@gmail.com'
+EMAIL_HOST_PASSWORD = 'tcgvjgryucvrtafi'
