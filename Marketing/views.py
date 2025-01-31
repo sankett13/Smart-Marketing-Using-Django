@@ -104,9 +104,9 @@ def login_view(request):
                 for section in sections:
                     news_dict.append(section)
                 
-                # print(news_dict)
+                print(news_dict)
 
-                return render(request,"dashboard.html",{"news":news_dict})
+                return redirect("dashboard",{"news":news_dict})
         else:
             return HttpResponse("Invalid credentials")
             
@@ -168,7 +168,7 @@ def send_email_message(request):
 
 
 
-def dashboard(request):
+def dashboard(request,news):
     # fake=Faker()
     # users=[]
     # for i in range(5):
@@ -202,8 +202,9 @@ def dashboard(request):
     #         product_id=random.choice(products),
     #         quantity=random.randint(1,10)
     #     )
+    print(news)
     
-    return render(request,"dashboard.html",{"name":"sahal"})
+    return render(request,"dashboard.html",{"name":"sahal","news":news})
 
 def generate_result(request):
     if request.method=="POST":

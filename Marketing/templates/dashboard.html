@@ -10,6 +10,78 @@
 
 <button class="whatsapp_msg">Send Whatsapp Message to all customers</button>
 <button class="email_msg">Send Email to all customers</button>
+<h1>Prompt Generator</h1>
+
+<div class="container">
+    <div class="input-section">
+        <h2>Enter your prompt</h2>
+        <textarea id="promptInput" placeholder="Type your prompt here..."></textarea>
+        <button onclick="generateResult()" id="generateBtn">Generate</button>
+        <span id="loading" class="loading">Processing...</span>
+    </div>
+    
+    <div class="output-section">
+        <h2>Result</h2>
+        <div id="resultOutput" class="output-box"></div>
+    </div>
+</div>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    async function generateResult() {
+        const promptText = document.getElementById('promptInput').value;
+        const outputDiv = document.getElementById('resultOutput');
+        const generateBtn = document.getElementById('generateBtn');
+        const loadingSpan = document.getElementById('loading');
+        
+        if (!promptText.trim()) {
+            alert('Please enter a prompt');
+            return;
+        }
+        
+        generateBtn.disabled = true;
+        loadingSpan.style.display = 'inline';
+        outputDiv.textContent = '';
+        
+        try {
+            const response = await fetch('{% url "generate_result" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    prompt: promptText
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (response.ok) {
+                outputDiv.textContent = data.content;
+            } else {
+                outputDiv.textContent = 'Error: Response Unsuccessful ' + (data.error || 'Something went wrong');
+            }
+        } catch (error) {
+            outputDiv.textContent = 'Error: Execption' + error.message;
+        } finally {
+            generateBtn.disabled = false;
+            loadingSpan.style.display = 'none';
+        }
+    }
+</script>
 
 
 
