@@ -6,11 +6,19 @@
 {% endblock %}
 {% block content %}
 <h1>Dashboard</h1>
-{% for news  in news %}
+<!-- {% for news  in news %}
 {{news}}
-{% endfor %}
-<button class="whatsapp_msg">Send Whatsapp Message to all customers</button>
-<button class="email_msg">Send Email to all customers</button>
+{% endfor %} -->
+
+<div class="Groq_news">
+
+</div>
+
+<form>
+    <textarea type="text" placeholder="Enter your message to Send " class="send_msg"></textarea>
+    <button class="whatsapp_msg">Send Whatsapp Message to all customers</button>
+    <button class="email_msg">Send Email to all customers</button>
+</form>
 <h1>Prompt Generator</h1>
 
 <div class="container">
@@ -23,8 +31,9 @@
     
     <div class="output-section">
         <h2>Result</h2>
-        <div id="resultOutput" class="output-box"></div>
-    </div>
+        <div class="output-box"id="resultOutput"></div>
+        <!-- <textarea id="resultOutput" class="output-box"><textarea/> -->
+    </textarea>
 </div>
 <script>
     function getCookie(name) {
@@ -89,15 +98,43 @@
 
 
 <script>
-    whatsapp_msg = document.querySelector(".whatsapp_msg");
-    email_msg = document.querySelector(".email_msg");
 
-    whatsapp_msg.addEventListener("click",function(){
-        fetch("{% url 'send_whatsapp_message' %}",{
-            method:"POST",
+    document.addEventListener("DOMContentLoaded", function () {
+        const div = document.querySelector(".Groq_news");
+
+        fetch("{% url 'get_news' %}", {
+            method: "POST",
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}'
             }
+        }).then(res => {
+            res.json().then(data => {
+                // console.log(data.news);
+                div.innerHTML = data.news;
+            })
+            
+        }).catch(error => console.error("Error fetching news:", error));
+    });
+    
+
+
+
+    whatsapp_msg = document.querySelector(".whatsapp_msg");
+    email_msg = document.querySelector(".email_msg");
+
+    whatsapp_msg.addEventListener("click",function(e){
+        e.preventDefault();
+        const send_msg = document.getElementsByClassName("send_msg")[0];
+        console.log(JSON.stringify(send_msg.value))
+        fetch("{% url 'send_whatsapp_message' %}",{
+            method:"POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                message: send_msg.value
+            })
         }).then(response=>{
             if(response.status == 200){
                 alert("Message sent to all users")
@@ -106,12 +143,18 @@
             }
         })
     })
-    email_msg.addEventListener("click",function(){
+    email_msg.addEventListener("click",function(e){
+        e.preventDefault();
+        const send_msg = document.getElementsByClassName("send_msg")[0];
+        console.log(JSON.stringify(send_msg.value))
         fetch("{% url 'send_email_message' %}",{
             method:"POST",
             headers: {
                 'X-CSRFToken': '{{ csrf_token }}'
-            }
+            },
+            body: JSON.stringify({
+                message: send_msg.value
+            })
         })
         .then(res=>{
             if(res.status == 200){

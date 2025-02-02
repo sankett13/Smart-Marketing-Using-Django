@@ -23,6 +23,7 @@ import os,sys
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 from utils import get_groq_news
+import re
 
 
 # for email
@@ -105,7 +106,7 @@ def login_view(request):
                     news_dict.append(section)
                     # print(section)
                 request.session["news"]=news_dict
-                print(news_dict)
+                # print(news_dict)
 
                 return redirect("dashboard")
         else:
@@ -134,7 +135,8 @@ def send_whatsapp_message(request):
         driver.get("https://web.whatsapp.com/")
         input("Press Enter to continue after scanning QR code")
         # print(user_details)
-        message = "this is a test message from Smart Marketing"
+        message = json.loads(request.body)["message"]
+        print(message)
         for user in user_details:
             print(user.get('phone_number'))
             driver.get(f"https://web.whatsapp.com/send?phone={user.get('phone_number')}&text={message}")
@@ -155,7 +157,7 @@ def send_whatsapp_message(request):
 def send_email_message(request):
     if request.method == 'POST':
         subject = "Test email"
-        message = "this is a test message from Smart Marketing"
+        message = json.loads(request.body)["message"]
         users = User_info.objects.all()
         for user in users:
             print(user.email)
@@ -212,6 +214,7 @@ def generate_result(request):
         try:
             data=json.loads(request.body)
             text=data["prompt"]
+            
             print(text)
             client = Groq(
             api_key="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"
@@ -221,19 +224,22 @@ def generate_result(request):
             messages=[
                 {
                     "role": "user",
-                    "content": text,
+                    "content": text+"keep the title in h2 tag in html and content in list tag",
                 },
                 {
                     "role":"system",
-                    "content":"You are an AI that will helps to search and Scrape News about Trends Regarding propular and traditional foods and drinks of the place asked during a specific season asked"
+                    "content":"you are a Food blog writer"
                 }
             ],
-            model="deepseek-r1-distill-llama-70b",
+            model="mixtral-8x7b-32768",
                 )
             result=chat_completion.choices[0].message.content.strip()
             if result:
-                print(result)
-                return JsonResponse({"content":result})
+                # print(result)
+                cleaned_result = re.sub(r'<think>.*?<\/think>', '', result, flags=re.DOTALL)
+                print(cleaned_result)
+
+                return JsonResponse({"content":cleaned_result})
             
         except Exception as er:
             print(er)
@@ -242,3 +248,25 @@ def generate_result(request):
             
     else:
         return Response({"content":"Invalid Request Method"})
+    
+
+
+def get_news(request):
+    prompt = """Find the latest food trends in Gujarat, India, for the current winter season. The response should be structured in news-style bullet points and cover the following aspects:
+
+
+                - **Trending Seasonal Dishes** – Popular Gujarati winter foods gaining traction.
+                - **New Food Industry Trends** – Any new restaurant concepts, fusion foods, or health-focused winter diets emerging in Gujarat.
+                - **Street Food Innovations** – Any trending street food or winter-special snacks unique to Gujarat.                
+                - **Beverage Trends** – Popular winter drinks, including herbal teas or immunity-boosting beverages.
+                - **Health & Wellness Trends** – Any superfoods, organic, or plant-based trends popular in Gujarat this winter.
+                - **Cultural Events** – Any cultural events, festivals, or celebrations unique to Gujarat this winter.
+                - **Food Industry Updates** – New food startups, restaurant launches, or winter-themed food nonprofits happening in Gujarat.
+                - **Travel Trends** – Popular winter destinations, accommodations, or activities in Gujarat.
+
+                The response should be concise, factual, and up-to-date, ensuring all insights are specific to Gujarat and the winter season. All The Headings in the Response must be enclosed in html <h2> tags and all the Points in List tags"""
+    news=get_groq_news(prompt)
+    # print(news)
+    return JsonResponse({"news":news,"status":200})
+    
+    
