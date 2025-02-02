@@ -6,8 +6,9 @@
 {% endblock %}
 {% block content %}
 <h1>Dashboard</h1>
-<p>{{news}}</p>
-
+{% for news  in news %}
+{{news}}
+{% endfor %}
 <button class="whatsapp_msg">Send Whatsapp Message to all customers</button>
 <button class="email_msg">Send Email to all customers</button>
 <h1>Prompt Generator</h1>
@@ -70,7 +71,8 @@
             const data = await response.json();
             
             if (response.ok) {
-                outputDiv.textContent = data.content;
+                console.log(data.content);
+                outputDiv.innerHTML = data.content;
             } else {
                 outputDiv.textContent = 'Error: Response Unsuccessful ' + (data.error || 'Something went wrong');
             }

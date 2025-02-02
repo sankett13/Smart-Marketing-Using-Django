@@ -97,16 +97,17 @@ def login_view(request):
                 - **Food Industry Updates** – New food startups, restaurant launches, or winter-themed food nonprofits happening in Gujarat.
                 - **Travel Trends** – Popular winter destinations, accommodations, or activities in Gujarat.
 
-                The response should be concise, factual, and up-to-date, ensuring all insights are specific to Gujarat and the winter season."""
+                The response should be concise, factual, and up-to-date, ensuring all insights are specific to Gujarat and the winter season. All The Headings in the Response must be enclosed in html <h2> tags and all the Points in List tags"""
                 news = get_groq_news(prompt)
                 sections = news.strip().split("\n\n")
                 news_dict = []
                 for section in sections:
                     news_dict.append(section)
-                
+                    # print(section)
+                request.session["news"]=news_dict
                 print(news_dict)
 
-                return redirect("dashboard",{"news":news_dict})
+                return redirect("dashboard")
         else:
             return HttpResponse("Invalid credentials")
             
@@ -168,7 +169,7 @@ def send_email_message(request):
 
 
 
-def dashboard(request,news):
+def dashboard(request):
     # fake=Faker()
     # users=[]
     # for i in range(5):
@@ -202,8 +203,8 @@ def dashboard(request,news):
     #         product_id=random.choice(products),
     #         quantity=random.randint(1,10)
     #     )
-    print(news)
-    
+    print("Hello World")
+    news=request.session.get("news")
     return render(request,"dashboard.html",{"name":"sahal","news":news})
 
 def generate_result(request):
@@ -231,6 +232,7 @@ def generate_result(request):
                 )
             result=chat_completion.choices[0].message.content.strip()
             if result:
+                print(result)
                 return JsonResponse({"content":result})
             
         except Exception as er:
